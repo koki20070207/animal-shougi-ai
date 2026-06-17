@@ -1,3 +1,7 @@
+# ==========================================
+# 動物将棋AI - app.py
+# ==========================================
+
 # 1. 初期配置の定義
 # e_ は相手(Enemy)、p_ は自分(Player)
 # K:キリン, L:ライオン, Z:ゾウ, H:ヒヨコ
@@ -21,24 +25,63 @@ def display_board(current_board):
         print("|".join(row_str))
     print("-----------------")
 
-# 3. 関数を実行してみる
-display_board(board)
-# 4. 駒を動かす関数
+# 3. 駒を動かす関数 (データを書き換えるだけ)
 def move_piece(current_board, from_row, from_col, to_row, to_col):
-    # 移動元の駒を取得
+    piece = current_board[from_row][from_col]
+    current_board[from_row][from_col] = None # 元のマスを空に
+    current_board[to_row][to_col] = piece    # 先のマスに置く
+
+# 4. その移動が正しいルールかどうかを判定する関数 (審判)
+def is_valid_move(current_board, from_row, from_col, to_row, to_col):
     piece = current_board[from_row][from_col]
     
-    # 移動元のマスを空っぽ(None)にする
-    current_board[from_row][from_col] = None
-    
-    # 移動先のマスに駒を置く
-    current_board[to_row][to_col] = piece
+    # 動かそうとしたマスが空っぽならエラー
+    if piece is None:
+        return False
+        
+    # 【自分のヒヨコ (p_H) のルール：前に1マスだけ】
+    if piece == "p_H":
+        row_diff = to_row - from_row
+        col_diff = to_col - from_col
+        if row_diff == -1 and col_diff == 0:
+            return True
+        else:
+            return False
+            
+    # まだ他の駒のルールを作っていないので、一旦一律True
+    return True
 
-# --- 実験：自分のヒヨコを1マス前に動かしてみる ---
-print("\n★自分のヒヨコ(p_H)を (2, 1) から (1, 1) へ移動します...")
+# ==========================================
+# 5. これより下は実験用のコード
+# ==========================================
 
-# 関数を呼び出す（ board, 元の縦, 元の横, 先の縦, 先の横 ）
-move_piece(board, 2, 1, 1, 1)
+if __name__ == "__main__":
+    # 実験スタート
+    print("【ゲームスタート時の盤面】")
+    display_board(board)
 
-# 移動後の盤面を表示
-display_board(board)
+    # --- 実験1：ヒヨコを1マス前に進める（正しい動き） ---
+    from_r, from_c = 2, 1
+    to_r, to_c = 1, 1
+
+    print(f"\n★実験1：自分のヒヨコを ({from_r}, {from_c}) から ({to_r}, {to_c}) へ動かします")
+    if is_valid_move(board, from_r, from_c, to_r, to_c):
+        print("👉 審判：OKです！移動します。")
+        move_piece(board, from_r, from_c, to_r, to_c)
+    else:
+        print("❌ 審判：反則です！")
+
+    display_board(board)
+
+    # --- 実験2：ヒヨコを横に動かそうとする（反則の動き） ---
+    from_r, from_c = 1, 1 # さっき移動したヒヨコ
+    to_r, to_c = 1, 2     # 右に動かそうとする
+
+    print(f"\n★実験2：自分のヒヨコを ({from_r}, {from_c}) から ({to_r}, {to_c}) へ横に動かします")
+    if is_valid_move(board, from_r, from_c, to_r, to_c):
+        print("👉 審判：OKです！移動します。")
+        move_piece(board, from_r, from_c, to_r, to_c)
+    else:
+        print("❌ 審判：反則です！移動しません。")
+
+    display_board(board)
